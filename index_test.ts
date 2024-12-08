@@ -1,10 +1,5 @@
 import { assertEquals, assertMatch, assertNotEquals } from '@std/assert';
-import {
-  decryptPipeline,
-  encryptPipeline,
-  generateSecret,
-  generateToken,
-} from './main.ts';
+import { decrypt, encrypt, generateSecret, generateToken } from './index.ts';
 
 function assertEqualsStream(expected: string): WritableStream<string> {
   let result = '';
@@ -30,6 +25,16 @@ Deno.test(function genTokenTest() {
   assertMatch(generateToken(), /^[a-zA-Z0-9+\/]+={0,2}$/);
 });
 
+Deno.test(async function encryptDecryptStringTest() {
+  const secret = btoa('secret');
+  const token = btoa('token');
+  const password = 'password';
+  const pipelineOptions = { secret, token, password, iterations: 1 };
+  const ciphertext = await encrypt('foobar', pipelineOptions);
+  const plaintext = await decrypt(ciphertext, pipelineOptions);
+  assertEquals(plaintext, 'foobar');
+});
+
 Deno.test(async function encryptDecryptPipelineTest() {
   const secret = btoa('secret');
   const token = btoa('token');
@@ -37,8 +42,8 @@ Deno.test(async function encryptDecryptPipelineTest() {
   const pipelineOptions = { secret, token, password, iterations: '1' };
   const plaintextStream = ReadableStream.from(['foobar'])
     .pipeThrough(new TextEncoderStream());
-  const ciphertextStream = encryptPipeline(plaintextStream, pipelineOptions);
-  const resultStream = decryptPipeline(ciphertextStream, pipelineOptions);
+  const ciphertextStream = encrypt(plaintextStream, pipelineOptions);
+  const resultStream = decrypt(ciphertextStream, pipelineOptions);
   await resultStream
     .pipeThrough(new TextDecoderStream())
     .pipeTo(assertEqualsStream('foobar'));

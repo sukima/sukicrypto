@@ -30,7 +30,7 @@ function isEmpty(predicate?: Uint8Array): boolean {
 export class MissingRequirementError extends Error {
   override name = 'MissingRequirementError ';
   static matches(error: unknown): error is MissingRequirementError {
-    return error instanceof MissingRequirementError ;
+    return error instanceof MissingRequirementError;
   }
 }
 
@@ -77,7 +77,7 @@ export async function encrypt(
     algo: CRYPTO_ALGO,
     options: {
       requirePassword: !isEmpty(cryptOptions.password),
-      requireToken: !isEmpty(cryptOptions.token)
+      requireToken: !isEmpty(cryptOptions.token),
     },
     iterations: cryptOptions.iterations ?? ITERATIONS,
     iv,
